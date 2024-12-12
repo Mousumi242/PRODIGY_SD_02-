@@ -1,0 +1,165 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+public class ContactBook {
+    private static final String DATA_FILE = "contacts.txt";
+    private ArrayList<Contact> contactList;
+    private Scanner inputScanner;
+    public ContactBook() {
+        contactList = new ArrayList<>();
+        inputScanner = new Scanner(System.in);
+        loadContacts();
+    }
+    public static void main(String[] args) {
+        ContactBook book = new ContactBook();
+        book.start();
+    }
+    public void start() {
+        boolean isActive = true;
+        while (isActive) {
+            System.out.println("\nContact Management System");
+            System.out.println("1. Add New Contact");
+            System.out.println("2. Display All Contacts");
+            System.out.println("3. Update Contact");
+            System.out.println("4. Remove Contact");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = inputScanner.nextInt();
+            inputScanner.nextLine(); // Consume newline
+            switch (choice) {
+                case 1:
+                    addNewContact();
+                    break;
+                case 2:
+                    displayContacts();
+                    break;
+                case 3:
+                    updateContact();
+                    break;
+                case 4:
+                    removeContact();
+                    break;
+                case 5:
+                    isActive = false;
+                    saveContacts();
+                    System.out.println("Exiting... Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+    private void addNewContact() {
+        System.out.print("Enter Name: ");
+        String name = inputScanner.nextLine();
+        System.out.print("Enter Phone Number: ");
+        String phone = inputScanner.nextLine();
+        System.out.print("Enter Email Address: ");
+        String email = inputScanner.nextLine();
+
+        contactList.add(new Contact(name, phone, email));
+        System.out.println("Contact added successfully!");
+    }
+    private void displayContacts() {
+        if (contactList.isEmpty()) {
+            System.out.println("No contacts available.");
+            return;
+        }
+
+        System.out.println("\nYour Contacts:");
+        for (int i = 0; i < contactList.size(); i++) {
+            System.out.println((i + 1) + ". " + contactList.get(i));
+        }
+    }
+    private void updateContact() {
+        displayContacts();
+        if (contactList.isEmpty()) return;
+
+        System.out.print("Enter the contact number to update: ");
+        int index = inputScanner.nextInt();
+        inputScanner.nextLine();
+        if (index <= 0 || index > contactList.size()) {
+            System.out.println("Invalid contact number.");
+            return;
+        }
+        Contact contact = contactList.get(index - 1);
+        System.out.print("Enter New Name (Leave blank to keep current: " + contact.getName() + "): ");
+        String newName = inputScanner.nextLine();
+        if (!newName.isEmpty()) contact.setName(newName);
+        System.out.print("Enter New Phone Number (Leave blank to keep current: " + contact.getPhone() + "): ");
+        String newPhone = inputScanner.nextLine();
+        if (!newPhone.isEmpty()) contact.setPhone(newPhone);
+        System.out.print("Enter New Email Address (Leave blank to keep current: " + contact.getEmail() + "): ");
+        String newEmail = inputScanner.nextLine();
+        if (!newEmail.isEmpty()) contact.setEmail(newEmail);
+        System.out.println("Contact updated successfully!");
+    }
+    private void removeContact() {
+        displayContacts();
+        if (contactList.isEmpty()) return;
+        System.out.print("Enter the contact number to delete: ");
+        int index = inputScanner.nextInt();
+        inputScanner.nextLine();
+        if (index <= 0 || index > contactList.size()) {
+            System.out.println("Invalid contact number.");
+            return;
+        }
+        contactList.remove(index - 1);
+        System.out.println("Contact removed successfully!");
+    }
+    private void loadContacts() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] details = line.split(",");
+                if (details.length == 3) {
+                    contactList.add(new Contact(details[0], details[1], details[2]));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("No existing contacts found. Starting fresh.");
+        }
+    }
+    private void saveContacts() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE))) {
+            for (Contact contact : contactList) {
+                writer.write(contact.getName() + "," + contact.getPhone() + "," + contact.getEmail());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving contacts to file.");
+        }
+    }
+}
+class Contact {
+    private String name;
+    private String phone;
+    private String email;
+    public Contact(String name, String phone, String email) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    @Override
+    public String toString() {
+        return "Name: " + name + ", Phone: " + phone + ", Email: " + email;
+    }
+}
